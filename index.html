@@ -253,8 +253,13 @@
   <textarea class="obs" rows="3" placeholder="Detalles, autorización, piezas, tiempos, etc."></textarea>
 
 <h3>FOTOS DEL VEHÍCULO</h3>
-<input id="fotosCamara" type="file" accept="image/*" capture="environment" />
+
+<label><b>Cámara</b></label><br>
+<input id="fotosCamara" type="file" accept="image/*" capture="environment" /><br><br>
+
+<label><b>Galería</b></label><br>
 <input id="fotosGaleria" type="file" accept="image/*" multiple />
+
 <div id="galeria" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;"></div>
 
 
@@ -426,34 +431,43 @@ function descargarPDF() {
   }, 600);
 }
 
-// === FOTOS DEL VEHÍCULO (mínimo 4) ===
-const inputFotos = document.getElementById("fotos");
+// === FOTOS DEL VEHÍCULO ===
+  const inputCamara = document.getElementById("fotosCamara");
+const inputGaleria = document.getElementById("fotosGaleria");
 const galeria = document.getElementById("galeria");
+
 let totalFotos = 0;
 
-if (inputFotos) {
-  inputFotos.addEventListener("change", () => {
-    galeria.innerHTML = "";
-    totalFotos = 0;
+function procesarFotos(files) {
+  Array.from(files).forEach(file => {
+    if (!file.type.startsWith("image/")) return;
 
-    const files = Array.from(inputFotos.files || []);
-
-    files.forEach(file => {
-      if (!file.type.startsWith("image/")) return;
-
-      const img = document.createElement("img");
-      img.onload = () => totalFotos++;
-      img.src = URL.createObjectURL(file);
-      galeria.appendChild(img);
-    });
+    const img = document.createElement("img");
+    img.onload = () => totalFotos++;
+    img.src = URL.createObjectURL(file);
+    galeria.appendChild(img);
   });
 }
 
+if (inputCamara) {
+  inputCamara.addEventListener("change", () => {
+    procesarFotos(inputCamara.files);
+    inputCamara.value = ""; // permite volver a tomar foto
+  });
+}
+
+if (inputGaleria) {
+  inputGaleria.addEventListener("change", () => {
+    procesarFotos(inputGaleria.files);
+    inputGaleria.value = ""; // permite volver a elegir
+  });
+}
   calcular();
 
 </script>
 
 </body>
 </html>
+
 
 
