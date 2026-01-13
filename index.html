@@ -326,7 +326,6 @@
 </div>
 
 <script>
-<script>
 function agregarFila() {
   const tabla = document.getElementById("tabla");
   const row = tabla.insertRow();
@@ -341,25 +340,6 @@ function agregarFila() {
     </td>
     <td class="lineTotal">$0.00</td>
   `;
-}
-function calcular() {
-  const filas = document.querySelectorAll("#tabla tr");
-  let subtotal = 0;
-
-  filas.forEach((fila, i) => {
-    if (i === 0) return;
-
-    const cant = parseNumero(fila.cells[0].querySelector("input").value);
-    const precioInput = fila.cells[2].querySelector("input");
-    const precio = parseNumero(precioInput.value);
-
-    const totalLinea = cant * precio;
-
-    fila.cells[3].innerText = formatoMoneda(totalLinea);
-    subtotal += totalLinea;
-  });
-
-  document.getElementById("subtotal").innerText = formatoMoneda(subtotal);
 }
   // ===== FIRMA (mouse + touch) =====
   const canvas = document.getElementById("firma");
@@ -471,7 +451,7 @@ if (inputGaleria) {
     inputGaleria.value = ""; // permite volver a elegir
   });
 }
-  
+<script>
 function parseNumero(valor) {
   return Number(String(valor).replace(/[^0-9.-]/g, "")) || 0;
 }
@@ -482,12 +462,33 @@ function formatoMoneda(valor) {
     currency: "MXN",
     minimumFractionDigits: 2
   });
-  calcular();
+}
 
+function calcular() {
+  const filas = document.querySelectorAll("#tabla tr");
+  let subtotal = 0;
+
+  filas.forEach((fila, i) => {
+    if (i === 0) return; // encabezado
+
+    const cantInput = fila.cells[0].querySelector("input");
+    const precioInput = fila.cells[2].querySelector("input");
+
+    const cant = parseNumero(cantInput.value);
+    const precio = parseNumero(precioInput.value);
+
+    const totalLinea = cant * precio;
+
+    fila.cells[3].innerText = formatoMoneda(totalLinea);
+    subtotal += totalLinea;
+  });
+
+  document.getElementById("subtotal").innerText = formatoMoneda(subtotal);
+}
 </script>
-
 </body>
 </html>
+
 
 
 
