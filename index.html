@@ -326,6 +326,7 @@
 </div>
 
 <script>
+<script>
 function agregarFila() {
   const tabla = document.getElementById("tabla");
   const row = tabla.insertRow();
@@ -340,8 +341,7 @@ function agregarFila() {
     </td>
     <td class="lineTotal">$0.00</td>
   `;
-  calcular();
-
+}
 function calcular() {
   const filas = document.querySelectorAll("#tabla tr");
   let subtotal = 0;
@@ -488,6 +488,7 @@ function formatoMoneda(valor) {
 
 </body>
 </html>
+
 
 
 
