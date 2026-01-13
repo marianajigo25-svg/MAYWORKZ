@@ -13,7 +13,6 @@
 
   body { font-family: Arial, sans-serif; background:#f2f2f2; margin:0; }
 
-  /* Contenedores centrados y consistentes */
   .container{
     width: var(--page-width);
     margin: 20px auto;
@@ -33,23 +32,21 @@
   h2 { margin: -5px; font-size: 28px; letter-spacing: 0.5px; }
   h3 { margin: 18px 0 8px 0; }
 
-  /* Tablas uniformes y centradas */
   table{
     width: 100%;
     border-collapse: collapse;
     margin: 10px auto 0 auto;
-    table-layout: fixed; /* ayuda a que no se deformen */
+    table-layout: fixed;
   }
   th, td{
     border:1px solid #000;
-    padding:8px;              /* un poquito más aire */
+    padding:8px;
     font-size:14px;
     vertical-align:middle;
     box-sizing: border-box;
   }
   th{ background:#e6e6e6; }
 
-  /* Inputs y textareas uniformes */
   input, textarea{
     width: 100%;
     border: none;
@@ -68,7 +65,6 @@
     display:block;
   }
 
-  /* Textareas con tamaño consistente */
   textarea.trabajo{
     min-height: 110px;
     max-height: 160px;
@@ -101,7 +97,6 @@
 
   .total-box td{ font-weight:bold; }
 
-  /* ===== TABLA DATOS: columnas parejitas ===== */
   table.datos td:nth-child(1),
   table.datos td:nth-child(3){
     width: 20%;
@@ -112,15 +107,12 @@
     width: 30%;
   }
 
-  /* ===== GRÚA: alineado bonito y centrado ===== */
-  .grua-cell{
-    padding: 8px 10px;
-  }
+  .grua-cell{ padding: 8px 10px; }
   .grua-options{
     display: flex;
     align-items: center;
-    justify-content: center;   /* centrado */
-    gap: 60px;                 /* separación entre Sí y No */
+    justify-content: center;
+    gap: 60px;
     flex-wrap: wrap;
   }
   .grua-opt{
@@ -130,11 +122,10 @@
     font-weight: 700;
   }
   .grua-opt input{
-    width: auto;               /* evita que se estire */
+    width: auto;
     transform: translateY(1px);
   }
 
-  /* Firma */
   .firma-wrap{
     display:flex;
     gap:14px;
@@ -144,7 +135,6 @@
   #firma{ border:1px solid #000; background:#fff; touch-action:none; }
   .firma-hint{ font-size:13px; color:#333; max-width:360px; line-height:1.35; }
 
-  /* ===== IMPRESIÓN A PDF (limpia) ===== */
   @media print {
     @page { size: A4; margin: 10mm; }
     body { background:#fff !important; }
@@ -154,17 +144,18 @@
     h3 { page-break-after: avoid; }
     textarea { border: 1px solid #000; }
   }
-/* === FOTOS DEL VEHÍCULO === */
-#galeria img{
-  width: 180px;
-  height: 120px;
-  object-fit: cover;
-  border: 1px solid #000;
-}
 
-@media print{
-  #fotos{ display:none !important; }
-}
+  /* === FOTOS DEL VEHÍCULO === */
+  #galeria img{
+    width: 180px;
+    height: 120px;
+    object-fit: cover;
+    border: 1px solid #000;
+  }
+
+  @media print{
+    #fotos{ display:none !important; } /* (si luego envuelves fotos en un div#fotos) */
+  }
 </style>
 </head>
 
@@ -224,7 +215,7 @@
 • Servicio y reparación de carburador"></textarea>
 
   <!-- TABLA DE COSTOS -->
- <table id="tabla">
+  <table id="tabla">
     <tr>
       <th style="width: 90px;">CANT.</th>
       <th>DESCRIPCIÓN</th>
@@ -244,8 +235,6 @@
     </tr>
   </table>
 
-
-
   <div class="actions">
     <button class="btn secondary" type="button" onclick="agregarFila()">+ Agregar concepto</button>
   </div>
@@ -259,13 +248,11 @@
   <h3>OBSERVACIONES</h3>
   <textarea class="obs" rows="3" placeholder="Detalles, autorización, piezas, tiempos, etc."></textarea>
 
-<h3>FOTOS DEL VEHÍCULO</h3>
-  
-<label><b>Galería</b></label><br>
-<input id="fotosGaleria" type="file" accept="image/*" multiple />
+  <h3>FOTOS DEL VEHÍCULO</h3>
 
-<div id="galeria" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;"></div>
-
+  <label><b>Galería</b></label><br>
+  <input id="fotosGaleria" type="file" accept="image/*" multiple />
+  <div id="galeria" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;"></div>
 
   <!-- INVENTARIO -->
   <h3>INVENTARIO</h3>
@@ -326,9 +313,44 @@
 </div>
 
 <script>
+/* ====== MONEDA ====== */
+function parseNumero(valor) {
+  return Number(String(valor).replace(/[^0-9.-]/g, "")) || 0;
+}
+
+function formatoMoneda(valor) {
+  return Number(valor || 0).toLocaleString("es-MX", {
+    style: "currency",
+    currency: "MXN",
+    minimumFractionDigits: 2
+  });
+}
+
+/* ====== CALCULO DE TOTALES ====== */
+function calcular() {
+  const filas = document.querySelectorAll("#tabla tr");
+  let subtotal = 0;
+
+  filas.forEach((fila, i) => {
+    if (i === 0) return;
+
+    const cant = parseNumero(fila.cells[0].querySelector("input").value);
+    const precio = parseNumero(fila.cells[2].querySelector("input").value);
+
+    const totalLinea = cant * precio;
+    fila.cells[3].innerText = formatoMoneda(totalLinea);
+
+    subtotal += totalLinea;
+  });
+
+  document.getElementById("subtotal").innerText = formatoMoneda(subtotal);
+}
+
+/* ====== AGREGAR FILA ====== */
 function agregarFila() {
   const tabla = document.getElementById("tabla");
   const row = tabla.insertRow();
+
   row.innerHTML = `
     <td><input type="number" value="1" min="0" step="1" oninput="calcular()" /></td>
     <td><input placeholder="Descripción" /></td>
@@ -340,70 +362,74 @@ function agregarFila() {
     </td>
     <td class="lineTotal">$0.00</td>
   `;
+
+  calcular();
 }
-  // ===== FIRMA (mouse + touch) =====
-  const canvas = document.getElementById("firma");
-  const ctx = canvas.getContext("2d");
-  let dibujando = false;
 
-  function posEnCanvas(clientX, clientY) {
-    const rect = canvas.getBoundingClientRect();
-    return { x: clientX - rect.left, y: clientY - rect.top };
-  }
+/* ====== FIRMA (mouse + touch) ====== */
+const canvas = document.getElementById("firma");
+const ctx = canvas.getContext("2d");
+let dibujando = false;
 
-  function empezarTrazo(x, y) {
-    dibujando = true;
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-  }
+function posEnCanvas(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  return { x: clientX - rect.left, y: clientY - rect.top };
+}
 
-  function trazar(x, y) {
-    if (!dibujando) return;
-    ctx.lineWidth = 2.2;
-    ctx.lineCap = "round";
-    ctx.lineTo(x, y);
-    ctx.stroke();
-  }
+function empezarTrazo(x, y) {
+  dibujando = true;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+}
 
-  function terminarTrazo() {
-    dibujando = false;
-    ctx.beginPath();
-  }
+function trazar(x, y) {
+  if (!dibujando) return;
+  ctx.lineWidth = 2.2;
+  ctx.lineCap = "round";
+  ctx.lineTo(x, y);
+  ctx.stroke();
+}
 
-  canvas.addEventListener("mousedown", (e) => {
-    const p = posEnCanvas(e.clientX, e.clientY);
-    empezarTrazo(p.x, p.y);
-  });
-  canvas.addEventListener("mousemove", (e) => {
-    const p = posEnCanvas(e.clientX, e.clientY);
-    trazar(p.x, p.y);
-  });
-  window.addEventListener("mouseup", terminarTrazo);
-  canvas.addEventListener("mouseleave", terminarTrazo);
+function terminarTrazo() {
+  dibujando = false;
+  ctx.beginPath();
+}
 
-  canvas.addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    const t = e.touches[0];
-    const p = posEnCanvas(t.clientX, t.clientY);
-    empezarTrazo(p.x, p.y);
-  }, { passive: false });
+canvas.addEventListener("mousedown", (e) => {
+  const p = posEnCanvas(e.clientX, e.clientY);
+  empezarTrazo(p.x, p.y);
+});
+canvas.addEventListener("mousemove", (e) => {
+  const p = posEnCanvas(e.clientX, e.clientY);
+  trazar(p.x, p.y);
+});
+window.addEventListener("mouseup", terminarTrazo);
+canvas.addEventListener("mouseleave", terminarTrazo);
 
-  canvas.addEventListener("touchmove", (e) => {
-    e.preventDefault();
-    const t = e.touches[0];
-    const p = posEnCanvas(t.clientX, t.clientY);
-    trazar(p.x, p.y);
-  }, { passive: false });
+canvas.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  const t = e.touches[0];
+  const p = posEnCanvas(t.clientX, t.clientY);
+  empezarTrazo(p.x, p.y);
+}, { passive: false });
 
-  canvas.addEventListener("touchend", (e) => {
-    e.preventDefault();
-    terminarTrazo();
-  }, { passive: false });
+canvas.addEventListener("touchmove", (e) => {
+  e.preventDefault();
+  const t = e.touches[0];
+  const p = posEnCanvas(t.clientX, t.clientY);
+  trazar(p.x, p.y);
+}, { passive: false });
 
-  function limpiarFirma() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
+canvas.addEventListener("touchend", (e) => {
+  e.preventDefault();
+  terminarTrazo();
+}, { passive: false });
 
+function limpiarFirma() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+/* ====== PDF ====== */
 function descargarPDF() {
   if (totalFotos < 4) {
     alert("Debes agregar al menos 4 fotos del vehículo antes de descargar el PDF.");
@@ -413,15 +439,13 @@ function descargarPDF() {
   const originalTitle = document.title;
   document.title = "Orden de Servicio - MAYWORKZ";
 
-  // pequeño delay para asegurar que las imágenes estén listas
   setTimeout(() => {
     window.print();
     document.title = originalTitle;
   }, 600);
 }
 
-// === FOTOS DEL VEHÍCULO ===
-  const inputCamara = document.getElementById("fotosCamara");
+/* ====== FOTOS ====== */
 const inputGaleria = document.getElementById("fotosGaleria");
 const galeria = document.getElementById("galeria");
 
@@ -438,61 +462,16 @@ function procesarFotos(files) {
   });
 }
 
-if (inputCamara) {
-  inputCamara.addEventListener("change", () => {
-    procesarFotos(inputCamara.files);
-    inputCamara.value = ""; // permite volver a tomar foto
-  });
-}
-
 if (inputGaleria) {
   inputGaleria.addEventListener("change", () => {
     procesarFotos(inputGaleria.files);
-    inputGaleria.value = ""; // permite volver a elegir
-  });
-}
-<script>
-function parseNumero(valor) {
-  return Number(String(valor).replace(/[^0-9.-]/g, "")) || 0;
-}
-
-function formatoMoneda(valor) {
-  return Number(valor || 0).toLocaleString("es-MX", {
-    style: "currency",
-    currency: "MXN",
-    minimumFractionDigits: 2
+    inputGaleria.value = "";
   });
 }
 
-function calcular() {
-  const filas = document.querySelectorAll("#tabla tr");
-  let subtotal = 0;
-
-  filas.forEach((fila, i) => {
-    if (i === 0) return; // encabezado
-
-    const cantInput = fila.cells[0].querySelector("input");
-    const precioInput = fila.cells[2].querySelector("input");
-
-    const cant = parseNumero(cantInput.value);
-    const precio = parseNumero(precioInput.value);
-
-    const totalLinea = cant * precio;
-
-    fila.cells[3].innerText = formatoMoneda(totalLinea);
-    subtotal += totalLinea;
-  });
-
-  document.getElementById("subtotal").innerText = formatoMoneda(subtotal);
-}
+/* ====== INICIAL ====== */
+document.addEventListener("DOMContentLoaded", calcular);
 </script>
+
 </body>
 </html>
-
-
-
-
-
-
-
-
