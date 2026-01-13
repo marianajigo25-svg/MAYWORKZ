@@ -326,36 +326,41 @@
 </div>
 
 <script>
-  function agregarFila() {
-    const tabla = document.getElementById("tabla");
-    const row = tabla.insertRow();
-    row.innerHTML = `
-      <td><input type="number" value="1" min="0" step="1" oninput="calcular()" /></td>
-      <td><input placeholder="Descripción" /></td>
-      <td><input type="number" value="0" min="0" step="0.01" oninput="calcular()" /></td>
-      <td class="lineTotal">$0.00</td>
-    `;
-  }
+function agregarFila() {
+  const tabla = document.getElementById("tabla");
+  const row = tabla.insertRow();
+  row.innerHTML = `
+    <td><input type="number" value="1" min="0" step="1" oninput="calcular()" /></td>
+    <td><input placeholder="Descripción" /></td>
+    <td>
+      <input type="text" value="$0.00"
+        onfocus="this.value = parseNumero(this.value) || ''"
+        oninput="calcular()"
+        onblur="this.value = formatoMoneda(parseNumero(this.value)); calcular();" />
+    </td>
+    <td class="lineTotal">$0.00</td>
+  `;
+  calcular();
 
-  function calcular() {
-    const filas = document.querySelectorAll("#tabla tr");
-    let subtotal = 0;
+function calcular() {
+  const filas = document.querySelectorAll("#tabla tr");
+  let subtotal = 0;
 
-    filas.forEach((fila, i) => {
-      if (i === 0) return;
-      const cant = parseFloat(fila.cells[0].querySelector("input").value) || 0;
-      const precio = parseFloat(fila.cells[2].querySelector("input").value) || 0;
-      const totalLinea = cant * precio;
+  filas.forEach((fila, i) => {
+    if (i === 0) return;
 
-      fila.cells[3].innerText = "$" + totalLinea.toFixed(2);
-      subtotal += totalLinea;
-    });
+    const cant = parseNumero(fila.cells[0].querySelector("input").value);
+    const precioInput = fila.cells[2].querySelector("input");
+    const precio = parseNumero(precioInput.value);
 
- 
-    document.getElementById("subtotal").innerText = "$" + subtotal.toFixed(2);
-    document.getElementById("total").innerText = "$" + total.toFixed(2);
-  }
+    const totalLinea = cant * precio;
 
+    fila.cells[3].innerText = formatoMoneda(totalLinea);
+    subtotal += totalLinea;
+  });
+
+  document.getElementById("subtotal").innerText = formatoMoneda(subtotal);
+}
   // ===== FIRMA (mouse + touch) =====
   const canvas = document.getElementById("firma");
   const ctx = canvas.getContext("2d");
@@ -466,12 +471,24 @@ if (inputGaleria) {
     inputGaleria.value = ""; // permite volver a elegir
   });
 }
+  
+function parseNumero(valor) {
+  return Number(String(valor).replace(/[^0-9.-]/g, "")) || 0;
+}
+
+function formatoMoneda(valor) {
+  return Number(valor || 0).toLocaleString("es-MX", {
+    style: "currency",
+    currency: "MXN",
+    minimumFractionDigits: 2
+  });
   calcular();
 
 </script>
 
 </body>
 </html>
+
 
 
 
